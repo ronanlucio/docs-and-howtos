@@ -43,6 +43,23 @@ Supported types:
 - Regional internal: Between groups of instances in a region
 
 
+### TYPES
+
+- HTTP(S) Load Balancing: (Layer7, Global scope, distribute traffic by location or content)
+- SSL Proxy
+- TCP Proxy
+- Network TCP/UDP: (Layer4, Regional, External traffic, forward rules by address/port/protocol or and target pool (VM instance group)
+- Internal TCP/UDP: Same as Network LB, but for Internal traffic
+
+Global: HTTP(S), SSL Proxy, and TCP Proxy
+Regional: Internal TCP/UDP, and Network TCP/UDP
+
+### TRAFFIC
+
+External: HTTP(S), SSL Proxy, TCP Proxy, and Network TCP/UDP
+Internal: Internal TCP/UDP
+
+
 ## Cloud CDN
 
 Accelerates delivery from Compute Engine and Cloud Storage
