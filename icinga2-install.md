@@ -1,3 +1,17 @@
+# General System Configuration
+
+## Set timezone
+
+```
+$ sudo timedatectl set-timezone Pacific/Auckland
+```
+
+## Set hostname
+
+```
+$ sudo hostnamectl set-hostname myserver
+```
+
 # Setting up Icinga 2 on Ubuntu
 
 ```
@@ -10,25 +24,26 @@
   echo "deb-src https://packages.icinga.com/ubuntu icinga-${DIST} main" >> \
   /etc/apt/sources.list.d/${DIST}-icinga.list
 # apt update
-# apt install icinga2
+# apt install -y icinga2
 ```
 
 
 ## Setting up Check Plugins
 ```
-# apt install monitoring-plugins
+# apt install -y monitoring-plugins
 ```
 
 
 ## Running Icinga 2
 ```
 # systemctl status icinga2
+# systemctl enable icinga2
 ```
 
 
 ## Configuration Syntax Highlighting
 ```
-# apt install vim-icinga2 vim-addon-manager
+# apt install -y vim-icinga2 vim-addon-manager
 # vim-addon-manager -w install icinga2
 ```
 
@@ -43,10 +58,21 @@
 
 **Installing IDO modules (Icinga Data Output) for MySQL**
 ```
-# apt install icinga2-ido-mysql
+# apt install -y icinga2-ido-mysql
 ```
-Answer Yes when prompted, enable Icinga 2 to use MySQL as the backend database.
-If not enabled, this feature can be enabled later by running the command:
+Answer **Yes** when prompted "Enable Icinga 2's ido-mysql feature?".
+
+Answer **Yes** when prompted for "Configure database for icinga2-ido-mysql with dbconfig-common?".
+
+You'll be asked for a password, and so this will create:
+
+- A database **icinga2**
+- A db user **icinga2** with the password you typed
+
+If you want to perform this configuration manually, os if your database has already been installed and configured, you should refuse this option.
+Defatils on what needs to be done should most likely be provided in /usr/share/doc/icinga2-ido-mysql.
+
+
 ```
 # icinga2 feature enable ido-mysql
 # systemctl restart icinga2
@@ -59,6 +85,9 @@ To list enabled features, run the command:
 
 
 **Setting up MySQL**
+
+**ATTENTION**: Execute this step only if you choose to NOT configure database on the previous step
+
 ```
 # mysql -u root -p
 
@@ -106,7 +135,7 @@ Edit /etc/icinga2/conf.d/api-users.conf file and add a new ApiUser object. Speci
 # vim /etc/icinga2/conf.d/api-users.conf
 
 object ApiUser "icingaweb2" {
-  password = "Wijsn8Z9eRs5E25d"
+  password = "YOUR*PASSWORD*HERE"
   permissions = [ "status/query", "actions/*", "objects/modify/*", "objects/query/*" ]
 }
 ```
@@ -120,8 +149,8 @@ object ApiUser "icingaweb2" {
 ## Installing Icinga Web 2
 **Install Icinga Web 2**
 ```
-# apt install icingaweb2 libapache2-mod-php icingacli
-# apt install php-gd
+# apt install -y icingaweb2 libapache2-mod-php icingacli
+# apt install -y php-gd
 ```
 
 
@@ -140,7 +169,7 @@ If you need to get the token again, just execute:
 # mysql -u root -p
 
 CREATE DATABASE icingaweb2;
-CREATE USER 'icinbaweb2'@'%' IDENTIFIED BY 'icingaweb2';
+CREATE USER 'icingaweb2'@'%' IDENTIFIED BY 'YOUR*DB*PASSWORD*HERE';
 GRANT ALL PRIVILEGES ON icingaweb2.* TO 'icingaweb2'@'%';
 quit
 ```
