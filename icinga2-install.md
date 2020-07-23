@@ -191,7 +191,8 @@ $ sudo ufw reload
 
 ###  Configuring Master Server
 
-Second, we need to prepare the master server to connect to host systems:
+Second, we need to prepare the master server to connect to host systems.
+If you've already done this for other clients, jump to next step **Generate a ticket for the new host**
 
 ```
 $ sudo icinga2 node wizard
