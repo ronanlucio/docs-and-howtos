@@ -22,6 +22,7 @@ On influx console:
 ```
 > CREATE DATABASE icinga2;
 > CREATE USER icinga2 WITH PASSWORD 'your-icinga2-influxdb-pwd';
+> quit
 ```
 
 ### Configure icinga2 to send performance data to InfluxDB
@@ -137,7 +138,7 @@ Default username and password are admin/admin.
 
 http://YOUR-ICINGA2-SERVER:3000/datasources/new?gettingstarted
 
-**Name:** InfluxDB-icinga2
+**Name:** influxdb-icinga2
 **Type:** InfluxDB
 **Default:** Yes
 
@@ -173,8 +174,62 @@ Replace the version number with the lates available version from [Latest Release
 # wget -q -O - "$URL" | tar xfz - -C "${TARGET_DIR}" --strip-components 1
 ```
 
+#### Grafana preparation
+
+Configure Grafana module as in the file [config.ini](files/icingaweb2-grafana-config.ini)
+
+```
+# vim /etc/icingaweb2/modules/grafana/config.ini
+```
+
+Configure graph.ini as in the file [graphs.ini](files/icingaweb2-grafana-graphs.ini)
+
+```
+# vim /etc/icingaweb2/modules/grafana/graphs.ini
+```
+
+Enable anonymous access (for icinga2 shows grafana's graphs)
+
+```
+# vim /etc/grafana/grafana.ini
+```
+
+```
+
+and configure as below
+
+```
+[auth.anonymous]
+# enable anonymous access
+enabled = true
+
+# specify organization name that should be used for unauthenticated users
+org_name = YOUR_ORGANIZATION_NAME
+
+# specify role for unauthenticated users
+org_role = Viewer
+
+# set to true if you want to allow browsers to render Grafana in a <frame>, <iframe>, <embed> or <object>. default is false.
+allow_embedding = true
+```
+
+#### Restart Grafana
+
+```
+# systemctl restart grafana-server
+```
+
 #### Enable module
 
 ```
 # icingacli module enable grafana
+# chown -R www-data:icingaweb2 /etc/icingaweb2
 ```
+
+# Reference
+
+This tutorial was based on
+
+- https://github.com/chrisss404/icinga2-influxdb-grafana
+- https://www.claudiokuenzler.com/blog/749/icinga2-graphing-influxdb-grafana#.W19_ddJKg2x
+- https://github.com/Mikesch-mp/icingaweb2-module-grafana/blob/master/doc/02-installation.md
