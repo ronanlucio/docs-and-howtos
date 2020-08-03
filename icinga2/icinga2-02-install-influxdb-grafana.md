@@ -25,35 +25,43 @@ On influx console:
 > quit
 ```
 
+### Enable influxdb feature on icinga2
+
+```
+$ sudo icinga2 feature enable influxdb
+```
+
 ### Configure icinga2 to send performance data to InfluxDB
 
 ```
-vim /etc/icinga2/features-enabled/influxdb.conf
+$ sudo vim /etc/icinga2/features-enabled/influxdb.conf
 ```
 
 and configure it as below:
 
 ```
-host = "127.0.0.1"
-port = 8086
-database = "icinga2"
-username = "icinga2"
-password = "your-icinga2-pwd"
-enable_send_thresholds = true
-enable_send_metadata = true
-flush_threshold = 1024
-flush_interval = 10s
-host_template = {
-  measurement = "$host.check_command$"
-  tags = {
-    hostname = "$host.name$"
+object InfluxdbWriter "influxdb" {
+  host = "127.0.0.1"
+  port = 8086
+  database = "icinga2"
+  username = "icinga2"
+  password = "your-icinga2-pwd"
+  enable_send_thresholds = true
+  enable_send_metadata = true
+  flush_threshold = 1024
+  flush_interval = 10s
+  host_template = {
+    measurement = "$host.check_command$"
+    tags = {
+      hostname = "$host.name$"
+    }
   }
-}
-service_template = {
-  measurement = "$service.check_command$"
-  tags = {
-    hostname = "$host.name$"
-    service = "$service.name$"
+  service_template = {
+    measurement = "$service.check_command$"
+    tags = {
+      hostname = "$host.name$"
+      service = "$service.name$"
+    }
   }
 }
 ```
@@ -61,7 +69,7 @@ service_template = {
 Tell Icinga2 to use InfluxDB for performance data
 
 ```
-$ sudo icinga2 feature enable influxdb
+$ sudo icinga2 feature enable statusdata
 $ sudo icinga2 feature enable perfdata
 $ sudo icinga2 feature list
 ```
@@ -113,8 +121,8 @@ $ sudo apt-get install -y apt-transport-https
 $ sudo apt-get install -y software-properties-common wget
 $ wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
 $ echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list 
-$ sudo apt-get update
-$ sudo apt-get install grafana
+$ sudo apt update
+$ sudo apt install grafana
 ```
 
 ### Start the server
@@ -138,25 +146,27 @@ Default username and password are admin/admin.
 
 http://YOUR-ICINGA2-SERVER:3000/datasources/new?gettingstarted
 
-**Name:** influxdb-icinga2
-**Type:** InfluxDB
-**Default:** Yes
+- **Name:** InfluxDB-icinga2
+- **Query Language:** InfluxQL
+- **Default:** Yes
 
 In "Http settings" set the access to the InfluxDB's API port, which is "http://localhost:8086" and has a "direct" access. 
 
-**URL:** http://127.0.0.1/8086
-**Access:** Server (default)
+- **URL:** http://127.0.0.1/8086
+- **Access:** Server (default)
 
 Grafana requires given user and password to connect to InfluxDB. Use the icinga2 user which was created above.
 
-Database: icinga2
-User: icinga2
-Password: your-icinga2-influxdb-pwd
+- **Database**: icinga2
+- **User**: icinga2
+- **Password**: your-icinga2-influxdb-pwd
 
 #### Import Grafana dashboard
 
 1. Import Dashboard: http://your-public-host.name:3000/dashboard/import
 2. Paste JSON from https://raw.githubusercontent.com/Mikesch-mp/icingaweb2-module-grafana/v1.1.8/dashboards/influxdb/base-metrics.json
+   or this another one:
+   https://grafana.com/api/dashboards/381/revisions/1/download
 
 #### Add Icinga Web Grafana module
 
@@ -172,9 +182,11 @@ Replace the version number with the lates available version from [Latest Release
 # URL="${REPO_URL}/archive/v${MODULE_VERSION}.tar.gz"
 # install -d -m 0755 "${TARGET_DIR}"
 # wget -q -O - "$URL" | tar xfz - -C "${TARGET_DIR}" --strip-components 1
+# mkdir /etc/icingaweb2/modules/grafana
 ```
 
 #### Grafana preparation
+
 
 Configure Grafana module as in the file [config.ini](files/icingaweb2-grafana-config.ini)
 
@@ -192,8 +204,6 @@ Enable anonymous access (for icinga2 shows grafana's graphs)
 
 ```
 # vim /etc/grafana/grafana.ini
-```
-
 ```
 
 and configure as below
@@ -224,6 +234,20 @@ allow_embedding = true
 ```
 # icingacli module enable grafana
 # chown -R www-data:icingaweb2 /etc/icingaweb2
+```
+
+Go to the service configuration and set the custom var grafana_graph_disable for all services, which have no Grafana graph: ssh, http, disk, and icinga.
+
+```
+# vim /etc/icinga2/zones.d/master/services.conf
+```
+
+Add `vars.grafana_graph_disable = true` to the services that don't have graphs
+
+Restart Icinga
+
+```
+# systemctl restart icinga2
 ```
 
 # Reference
