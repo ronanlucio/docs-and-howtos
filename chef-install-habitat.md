@@ -22,7 +22,9 @@ and type **yes**
 
 ## Define a Habitat Origin and export variable
 
-Habitat Origin will be used to sign your package. You can use any name that identify you package.
+A `Habit Origin` is a keypair used to sign packages to garantee it's authenticity.
+
+You can use any name that identify your place/company/project to sign your package.
 
 ```
 $ export HAB_ORIGIN=ronans-habitat

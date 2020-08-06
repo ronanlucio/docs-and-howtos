@@ -73,13 +73,28 @@ We'll have to install icinga2 on the remote host, almost the same way we did for
 # icinga2 node wizard
 ```
 
-- Answer **Y** when asked "if this is a satellite/client setup", and answer the next question, including the request ticket generated on the Icinga2 master.
-- Type your icinga2 master **server's FQDN** for "Master/Satellite Common Name"
-- Answer **Y** when asked "do you want to establish a connection to the parent from this node?"
-- Type your icinga2 master **server's IP address** for "Master/Satellite endpoint host"
-- Answer **Y** when asked "Accept config from parent node?"
-- Answer **Y** when asked "Accept commands from parent node?"
-- Accept default for all other questions
+QUESTIONS:
+
+- Please specify if this is an agent/satellite setup ('n' installs a master setup) [Y/n]: **Y**
+- Please specify the common name (CN) [YOUR_HOSTNAME]: **[ENTER]**
+- Master/Satellite Common Name (CN from your master/satellite node): **your-master-server.your-domain.com**
+- Do you want to establish a connection to the parent node from this node? [Y/n]: **Y**
+- Master/Satellite endpoint host (IP address or FQDN): **your-master-server.your-domain.com**
+- Master/Satellite endpoint port [5665]: **[ENTER]**
+- Add more master/satellite endpoints? [y/N]: **N**
+- Is this information correct? [y/N]: **Y**
+
+- Please specify the request ticket generated on your Icinga 2 master (optional): **Paste the ticket generated on your icinga2 server**
+- Bind Host []: **[ENTER]**
+- Bind Port []: **[ENTER]**
+
+- Accept config from parent node? [y/N]: **Y**
+- Accept commands from parent node? [y/N]: **Y**
+
+- Local zone name [YOUR HOSTNAME]: **[ENTER]**
+- Parent zone name [master]: **[ENTER]**
+- Do you want to specify additional global zones? [y/N]: **[ENTER]**
+- Do you want to disable the inclusion of the conf.d directory [Y/n]: **[ENTER]**
 
 **NOTE:** Write down the values shown for "Local zone name" and "Parente zone name". You'll need this values to configure it on the master server.
 
@@ -102,7 +117,7 @@ Add the content to the file as below, adjusting your host's parameters:
 
 ```
 // remote-host.example.com
-object Endpoint "ss-api-proxy.fingermark.co.nz" {
+object Endpoint "remote-host.example.com" {
 }
 
 object Zone "remote-host.example.com" {
