@@ -110,40 +110,17 @@ Switch to the **master** server and create a host file:
 
 ```
 $ sudo mkdir /etc/icinga2/zones.d/master
-$ sudo vi /etc/icinga2/zones.d/master/agents.conf
 ```
 
-Add the content to the file as below, adjusting your host's parameters:
+#### 1. Create your host file configuration
 
 ```
-// remote-host.example.com
-object Endpoint "remote-host.example.com" {
-}
-
-object Zone "remote-host.example.com" {
-  endpoints = [ "remote-host.example.com" ]
-  parent = "master"
-}
-
-object Host "remote-host.example.com" {
-  check_command = "hostalive"
-  address = "192.168.50.5" // That's your client's host IP
-
-  // check_disk
-  vars.disks["disk /"] = {
-    disk_partitions = "/"
-  }
-
-  // check_http
-  vars.http_vhosts["http"] = {
-    http_address = "remote-host.example.com"
-    http_vhost = "remote-host.example.com"
-    http_uri = "/"
-  }
-
-  vars.agent_endpoint = name //follows the convention that host name == endpoint name
-}
+$ sudo vi /etc/icinga2/zones.d/master/hosts/YOUR-HOSTNAME.conf
 ```
+
+Add the content to the file as below as in the file [host-remote-host.example.conf](./config/host-remote-host.example.com.conf), adjusting your host's parameters.
+
+#### 2. Create a services files configuration
 
 Create a services configuration file for your clients:
 
@@ -151,109 +128,23 @@ Create a services configuration file for your clients:
 $ sudo vi /etc/icinga2/zones.d/master/services.conf
 ```
 
-And add the content as below:
+And add the content as below on file [services.conf](./config/services.conf)
 
-```
-// Check System Load
-apply Service "System Load" {
-  check_command = "load"
-  command_endpoint = host.vars.agent_endpoint // Check executed on client node
-  assign where host.vars.agent_endpoint
-}
-
-// Check number of running system Processes
-apply Service "Process" {
-  check_command = "procs"
-  command_endpoint = host.vars.agent_endpoint
-  assign where host.vars.agent_endpoint
-}
-
-// Check number of Logged in Users
-apply Service "Users" {
-  check_command = "users"
-  command_endpoint = host.vars.agent_endpoint
-  assign where host.vars.agent_endpoint
-}
-
-// Check System Disk Usage
-apply Service "Disk" {
-  check_command = "disk"
-  command_endpoint = host.vars.agent_endpoint
-  assign where host.vars.agent_endpoint
-}
-
-// Check for SWAP memory Usage
-apply Service for (disk => config in host.vars.disks) {
-  import "generic-service"
-
-  check_command = "disk"
-
-  vars += config
-  command_endpoint = host.vars.agent_endpoint
-
-  assign where host.vars.agent_endpoint
-}
-
-apply Service for (http_vhost => config in host.vars.http_vhosts) {
-  import "generic-service"
-  check_command = "http"
-
-  vars += config
-}
-
-// SSH Service Check
-apply Service "SSH Service" {
-  check_command = "ssh"
-  command_endpoint = host.vars.agent_endpoint
-  assign where host.vars.agent_endpoint
-
-}
-
-apply Service "Ping" {
-  check_command = "ping4"
-  assign where host.address
-}
-
-// Agent health-check
-apply Service "agent-health" {
-  check_command = "cluster-zone"
-
-  display_name = "cluster-health-" + host.name
-
-  /* This follows the convention that the agent zone name is the FQDN which is the same as the host object name. */
-  vars.cluster_zone = host.name
-
-  assign where host.vars.agent_endpoint
-}
-```
-
-Create a dependencies file:
+#### 3. Create a dependencies file:
 
 ```
 $ sudo vi /etc/icinga2/zones.d/master/dependencies.conf
 ```
 
-Add the content as below:
+Add the content as in file [dependencies.conf](./config/dependencies.conf)
 
-```
-apply Dependency "agent-health-check" to Service {
-  parent_service_name = "agent-health"
-
-  states = [ OK ] // Fail if the parent service state switches to NOT-OK
-  disable_notifications = true
-
-  assign where host.vars.agent_endpoint // Automatically assigns all agent endpoint checks as child services on the matched host
-  ignore where service.name == "agent-health" // Avoid a self reference from child to parent
-}
-```
-
-Validate your configuration
+#### 4. Validate your configuration
 
 ```
 $ sudo icinga2 daemon -C
 ```
 
-Restart icinga2:
+#### 5. Restart icinga2
 
 ```
 $ sudo systemctl restart icinga2
