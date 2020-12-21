@@ -1,6 +1,6 @@
 # Installing an Agent for Remote Host Monitoring on Incinga2
 
-## Add Remote Host to Icinga2 for Monitoring
+## On Icinga2 Master Server
 
 First, confirm the Icinga2 Server (master) has tcp port 5665 allowed on the firewall
 
@@ -34,7 +34,7 @@ $ sudo icinga2 pki ticket --cn remote-host.example.com
 
 Take note of the generated ticket for later usage. This will be something like "9e26a5966cd6e2d6593448214cab8d5e7bd61d59"
 
-### Install icinga2 on the remote host
+## On Remote Node
 
 We'll have to install icinga2 on the remote host, almost the same way we did for the master one:
 
@@ -53,6 +53,21 @@ We'll have to install icinga2 on the remote host, almost the same way we did for
 # systemctl enable icinga2
 ```
 
+#### Debian
+
+```
+# apt update
+# apt install -y apt-transport-https wget gnupg
+# wget -O - https://packages.icinga.com/icinga.key | apt-key add -
+# DIST=$(awk -F"[)(]+" '/VERSION=/ {print $2}' /etc/os-release); \
+  echo "deb https://packages.icinga.com/debian icinga-${DIST} main" > /etc/apt/sources.list.d/${DIST}-icinga.list
+# echo "deb-src https://packages.icinga.com/debian icinga-${DIST} main" >> /etc/apt/sources.list.d/${DIST}-icinga.list
+# apt update
+# apt install -y icinga2 monitoring-plugins
+# systemctl start icinga2
+# systemctl enable icinga2
+```
+
 #### Redhat 8
 
 ````
@@ -61,8 +76,8 @@ We'll have to install icinga2 on the remote host, almost the same way we did for
 # subscription-manager repos --enable rhel-8-server-optional-rpms
 # subscription-manager repos --enable "codeready-builder-for-rhel-8-${ARCH}-rpms"
 # dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-# dnf install icinga2
-# dnf install nagios-plugins-all
+# dnf install icinga2 -y
+# dnf install nagios-plugins-all -y
 # systemctl enable icinga2
 # systemctl start icinga2
 ````
