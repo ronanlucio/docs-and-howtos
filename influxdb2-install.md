@@ -42,6 +42,27 @@ docker run -d -p 8086:8086 \
 
 ```
 
+or, if you already issued a certificate, you can use this
+
+```
+#!/bin/sh
+
+DATA_DIR="/data/influxdb"
+
+cd $DATA_DIR
+docker run -d -p 8086:8086 \
+        --name influxdb2 \
+        --restart unless-stopped \
+        -e INFLUXD_TLS_CERT=/etc/ssl/server-fullchain.pem \
+        -e INFLUXD_TLS_KEY=/etc/ssl/server.key \
+        -v $PWD:/var/lib/influxdb2 \
+        -v /data/influxdb/config/config.yml:/etc/influxdb2/config.yml \
+        -v /etc/ssl/certs/server-fullchain.pem:/etc/ssl/server-fullchain.pem \
+        -v /etc/ssl/server.key:/etc/ssl/server.key \
+        influxdb:2.0.4
+
+```
+
 Give execution permission to the script
 
 ```
